@@ -1,6 +1,7 @@
 import React from 'react';
 
 interface Ambition {
+  _key: string; // Add this line
   id: string;
   text: string;
   completed: boolean;
