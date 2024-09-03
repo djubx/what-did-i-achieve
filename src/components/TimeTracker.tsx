@@ -7,13 +7,19 @@ interface TimeSlot {
   ambition: string | null;
 }
 
+interface Ambition {
+  id: string;
+  text: string;
+  completed: boolean;
+}
+
 interface TimeTrackerProps {
-  ambitions: { id: string; text: string }[];
+  ambitions: Ambition[];
   onAmbitionUsed: (id: string) => void;
 }
 
 const TimeTracker: React.FC<TimeTrackerProps> = ({ ambitions, onAmbitionUsed }) => {
-  const [startTime, setStartTime] = useState<Date>(new Date().setHours(6, 0, 0, 0));
+  const [startTime, setStartTime] = useState<Date>(new Date(new Date().setHours(6, 0, 0, 0)));
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
 
   useEffect(() => {
@@ -30,11 +36,11 @@ const TimeTracker: React.FC<TimeTrackerProps> = ({ ambitions, onAmbitionUsed }) 
 
   const handleStartTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const [hours, minutes] = e.target.value.split(':').map(Number);
-    const newStartTime = new Date().setHours(hours, minutes, 0, 0);
+    const newStartTime = new Date(new Date().setHours(hours, minutes, 0, 0));
     setStartTime(newStartTime);
   };
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>, slotId: string) => {
+  const handleDrop = (e: React.DragEvent<HTMLLIElement>, slotId: string) => {
     e.preventDefault();
     const ambitionId = e.dataTransfer.getData('text/plain');
     const ambition = ambitions.find(a => a.id === ambitionId);
@@ -46,7 +52,7 @@ const TimeTracker: React.FC<TimeTrackerProps> = ({ ambitions, onAmbitionUsed }) 
     }
   };
 
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDragOver = (e: React.DragEvent<HTMLLIElement>) => {
     e.preventDefault();
   };
 
