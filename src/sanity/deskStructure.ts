@@ -1,15 +1,22 @@
 import {StructureBuilder} from 'sanity/desk'
 
-export const myStructure = (S: StructureBuilder) =>
+export const deskStructure = (S: StructureBuilder) =>
   S.list()
     .title('Content')
     .items([
       S.listItem()
         .title('Users')
         .child(
-          S.documentList()
+          S.documentTypeList('user')
             .title('Users')
-            .filter('_type == "user"')
         ),
-      // Add more list items for other document types here
+      S.listItem()
+        .title('User Dashboards')
+        .child(
+          S.documentTypeList('userDashboard')
+            .title('User Dashboards')
+        ),
+      // Add other document types here if needed
     ])
+
+export default deskStructure

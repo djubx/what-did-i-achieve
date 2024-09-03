@@ -4,11 +4,11 @@
  * This configuration is used to for the Sanity Studio that’s mounted on the `/app/studio/[[...tool]]/page.tsx` route
  */
 
-import {defineConfig} from 'sanity'
+import {defineConfig, SchemaTypeDefinition} from 'sanity'
 import {deskTool} from 'sanity/desk'
 import {visionTool} from '@sanity/vision'
 import {schemaTypes} from './src/sanity/schemaTypes'
-import {myStructure} from './src/sanity/deskStructure'
+import {deskStructure} from './src/sanity/deskStructure'
 
 export default defineConfig({
   basePath: '/studio', // Add this line
@@ -20,12 +20,12 @@ export default defineConfig({
 
   plugins: [
     deskTool({
-      structure: myStructure,
+      structure: deskStructure,
     }),
     visionTool()
   ],
 
   schema: {
-    types: schemaTypes,
+    types: schemaTypes as SchemaTypeDefinition[],
   },
 })

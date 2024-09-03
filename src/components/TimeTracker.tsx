@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { format, addMinutes } from 'date-fns';
+import { format, addMinutes, parseISO } from 'date-fns';
 
-interface TimeSlot {
-  id: string;
-  time: Date;
-  ambition: string | null;
-  color: string | null;
+export interface TimeSlot {
+  _key: string;
+  startTime: string;
+  endTime: string;
+  ambition: string;
 }
 
 interface Ambition {
+  _key: string;
   id: string;
   text: string;
   completed: boolean;
@@ -16,46 +17,108 @@ interface Ambition {
 }
 
 interface TimeTrackerProps {
+  dashboardData: any;
+  updateDashboardData: (newData: any) => void;
   ambitions: Ambition[];
   onAmbitionCompleted: (id: string, completed: boolean) => void;
+  updateSanityDashboard: (newAmbitions: Ambition[], newTimeSlots?: TimeSlot[], newStartTime?: Date) => void;
 }
 
-const TimeTracker: React.FC<TimeTrackerProps> = ({ ambitions, onAmbitionCompleted }) => {
+const TimeTracker: React.FC<TimeTrackerProps> = ({ 
+  dashboardData, 
+  updateDashboardData, 
+  ambitions, 
+  onAmbitionCompleted,
+  updateSanityDashboard
+}) => {
   const [startTime, setStartTime] = useState<Date>(new Date(new Date().setHours(6, 0, 0, 0)));
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
 
   useEffect(() => {
-    const slots: TimeSlot[] = [];
-    for (let i = 0; i < 32; i++) {
-      slots.push({
-        id: `slot-${i}`,
-        time: addMinutes(startTime, i * 30),
-        ambition: null,
-        color: null,
-      });
+    if (dashboardData?.todayStartTime) {
+      setStartTime(parseISO(dashboardData.todayStartTime));
     }
-    setTimeSlots(slots);
-  }, [startTime]);
+  }, [dashboardData]);
+
+  useEffect(() => {
+    if (dashboardData?.timeTracker) {
+      setTimeSlots(dashboardData.timeTracker);
+    }
+  }, [dashboardData]);
 
   const handleStartTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const [hours, minutes] = e.target.value.split(':').map(Number);
     const newStartTime = new Date(new Date().setHours(hours, minutes, 0, 0));
     setStartTime(newStartTime);
+    updateSanityDashboard(ambitions, timeSlots, newStartTime);
   };
 
-  const handleDrop = (e: React.DragEvent<HTMLLIElement>, slotId: string) => {
+  const handleDrop = (e: React.DragEvent<HTMLLIElement>, slotTime: Date) => {
     e.preventDefault();
     const ambitionId = e.dataTransfer.getData('text/plain');
     const ambition = ambitions.find(a => a.id === ambitionId && !a.completed);
     if (ambition) {
-      setTimeSlots(slots => slots.map(slot => 
-        slot.id === slotId ? { ...slot, ambition: ambition.text, color: ambition.color } : slot
-      ));
+      const existingSlotIndex = timeSlots.findIndex(slot => 
+        slot.startTime && slot.endTime &&
+        parseISO(slot.startTime) <= slotTime && parseISO(slot.endTime) > slotTime
+      );
+
+      let newTimeSlots: TimeSlot[];
+
+      if (existingSlotIndex !== -1) {
+        // Update existing slot
+        newTimeSlots = timeSlots.map((slot, index) => 
+          index === existingSlotIndex 
+            ? { ...slot, ambition: ambition.text }
+            : slot
+        );
+      } else {
+        // Create new slot
+        const newSlot: TimeSlot = {
+          _key: `timeSlot_${Date.now()}`,
+          startTime: slotTime.toISOString(),
+          endTime: addMinutes(slotTime, 30).toISOString(),
+          ambition: ambition.text
+        };
+        newTimeSlots = [...timeSlots, newSlot];
+      }
+
+      setTimeSlots(newTimeSlots);
+      updateSanityDashboard(ambitions, newTimeSlots);
     }
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLLIElement>) => {
     e.preventDefault();
+  };
+
+  const renderTimeSlots = () => {
+    const slots = [];
+    for (let i = 0; i < 32; i++) {
+      const slotTime = addMinutes(startTime, i * 30);
+      const existingSlot = timeSlots.find(slot => 
+        slot.startTime && slot.endTime &&
+        parseISO(slot.startTime) <= slotTime && parseISO(slot.endTime) > slotTime
+      );
+
+      slots.push(
+        <li 
+          key={`slot-${i}`}
+          className="px-4 py-4 flex items-center justify-between"
+          onDrop={(e) => handleDrop(e, slotTime)}
+          onDragOver={handleDragOver}
+          style={{ backgroundColor: ambitions.find(a => a.text === existingSlot?.ambition)?.color || 'transparent' }}
+        >
+          <span className="text-sm font-medium text-gray-900">
+            {format(slotTime, 'HH:mm')}
+          </span>
+          <span className="text-sm text-gray-500">
+            {existingSlot?.ambition || 'Drag an ambition here'}
+          </span>
+        </li>
+      );
+    }
+    return slots;
   };
 
   return (
@@ -81,22 +144,7 @@ const TimeTracker: React.FC<TimeTrackerProps> = ({ ambitions, onAmbitionComplete
       </div>
       <div className="border-t border-gray-200">
         <ul className="divide-y divide-gray-200">
-          {timeSlots.map((slot) => (
-            <li 
-              key={slot.id} 
-              className="px-4 py-4 flex items-center justify-between"
-              onDrop={(e) => handleDrop(e, slot.id)}
-              onDragOver={handleDragOver}
-              style={{ backgroundColor: slot.color || 'transparent' }}
-            >
-              <span className="text-sm font-medium text-gray-900">
-                {format(slot.time, 'HH:mm')}
-              </span>
-              <span className="text-sm text-gray-500">
-                {slot.ambition || 'Drag an ambition here'}
-              </span>
-            </li>
-          ))}
+          {renderTimeSlots()}
         </ul>
       </div>
     </div>
