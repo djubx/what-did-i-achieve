@@ -4,8 +4,9 @@ import { useEffect, useState, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { sanityClient } from '@/lib/sanity'
 import TimeTracker, { TimeSlot } from '@/components/TimeTracker'
-
 import AmbitionsList from '@/components/AmbitionsList'
+import { motion } from 'framer-motion'
+import { FaPlus } from 'react-icons/fa'
 
 interface Ambition {
   _key: string;
@@ -119,28 +120,50 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row gap-8 p-4">
-      <div className="w-full md:w-1/2">
-        <h2 className="text-2xl font-bold mb-4">Daily Ambitions</h2>
+    <motion.div 
+      className="flex flex-col md:flex-row gap-8 p-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      <motion.div 
+        className="w-full md:w-1/2 bg-white bg-opacity-90 p-6 rounded-xl shadow-lg"
+        initial={{ x: -20 }}
+        animate={{ x: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+      >
+        <h2 className="text-2xl font-bold mb-4 text-indigo-600">Daily Ambitions</h2>
         <form onSubmit={handleAddAmbition} className="mb-4">
-          <input
-            type="text"
-            value={newAmbition}
-            onChange={(e) => setNewAmbition(e.target.value)}
-            placeholder="Add a new ambition"
-            className="w-full p-2 border rounded"
-          />
-          <button type="submit" className="mt-2 bg-blue-500 text-white p-2 rounded">
-            Add Ambition
-          </button>
+          <div className="relative">
+            <input
+              type="text"
+              value={newAmbition}
+              onChange={(e) => setNewAmbition(e.target.value)}
+              placeholder="Add a new ambition"
+              className="w-full p-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+            <motion.button 
+              type="submit" 
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-indigo-500 hover:text-indigo-600"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <FaPlus />
+            </motion.button>
+          </div>
         </form>
         <AmbitionsList 
           ambitions={ambitions} 
           onAmbitionsChange={handleAmbitionsChange}
           onAmbitionCompleted={handleAmbitionCompleted}
         />
-      </div>
-      <div className="w-full md:w-1/2">
+      </motion.div>
+      <motion.div 
+        className="w-full md:w-1/2 bg-white bg-opacity-90 p-6 rounded-xl shadow-lg"
+        initial={{ x: 20 }}
+        animate={{ x: 0 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+      >
         <TimeTracker 
           dashboardData={dashboardData}
           updateDashboardData={updateDashboardData}
@@ -148,7 +171,7 @@ export default function Dashboard() {
           onAmbitionCompleted={handleAmbitionCompleted}
           updateSanityDashboard={updateSanityDashboard}
         />
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }
