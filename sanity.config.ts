@@ -11,6 +11,7 @@ import {schemaTypes} from './src/sanity/schemaTypes'
 import {myStructure} from './src/sanity/deskStructure'
 
 export default defineConfig({
+  basePath: '/studio', // Add this line
   name: 'default',
   title: 'Ambition Tracker',
 

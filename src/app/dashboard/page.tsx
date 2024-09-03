@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import AmbitionsList from '@/components/AmbitionsList'
 import TimeTracker from '@/components/TimeTracker'
 
@@ -8,20 +8,38 @@ interface Ambition {
   id: string;
   text: string;
   completed: boolean;
+  color: string;
 }
+
+const lightColors = [
+  '#FFB3BA', '#BAFFC9', '#BAE1FF', '#FFFFBA', '#FFDFBA', '#E0BBE4',
+  '#D4F0F0', '#FFC6FF', '#DAEAF6', '#FCE1E4', '#E8DAEF', '#D5F5E3'
+];
 
 export default function Dashboard() {
   const [ambitions, setAmbitions] = useState<Ambition[]>([]);
   const [newAmbition, setNewAmbition] = useState('');
+  const [usedColors, setUsedColors] = useState<string[]>([]);
+
+  const getUniqueColor = useCallback(() => {
+    const availableColors = lightColors.filter(color => !usedColors.includes(color));
+    if (availableColors.length === 0) {
+      setUsedColors([]);
+      return lightColors[0];
+    }
+    const newColor = availableColors[Math.floor(Math.random() * availableColors.length)];
+    setUsedColors([...usedColors, newColor]);
+    return newColor;
+  }, [usedColors]);
 
   const handleAmbitionsChange = (newAmbitions: Ambition[]) => {
     setAmbitions(newAmbitions);
   };
 
-  const handleAmbitionUsed = (id: string) => {
+  const handleAmbitionCompleted = (id: string, completed: boolean) => {
     setAmbitions(prevAmbitions => 
       prevAmbitions.map(ambition => 
-        ambition.id === id ? { ...ambition, completed: true } : ambition
+        ambition.id === id ? { ...ambition, completed } : ambition
       )
     );
   };
@@ -32,7 +50,8 @@ export default function Dashboard() {
       const newAmbitionItem: Ambition = {
         id: Date.now().toString(),
         text: newAmbition.trim(),
-        completed: false
+        completed: false,
+        color: getUniqueColor()
       };
       setAmbitions(prevAmbitions => [...prevAmbitions, newAmbitionItem]);
       setNewAmbition('');
@@ -55,12 +74,16 @@ export default function Dashboard() {
             Add Ambition
           </button>
         </form>
-        <AmbitionsList ambitions={ambitions.filter(a => !a.completed)} onAmbitionsChange={handleAmbitionsChange} />
+        <AmbitionsList 
+          ambitions={ambitions} 
+          onAmbitionsChange={handleAmbitionsChange}
+          onAmbitionCompleted={handleAmbitionCompleted}
+        />
       </div>
       <div className="w-full md:w-1/2">
         <TimeTracker 
-          ambitions={ambitions.filter(a => !a.completed)} 
-          onAmbitionUsed={handleAmbitionUsed}
+          ambitions={ambitions} 
+          onAmbitionCompleted={handleAmbitionCompleted}
         />
       </div>
     </div>

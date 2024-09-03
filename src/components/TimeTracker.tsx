@@ -5,20 +5,22 @@ interface TimeSlot {
   id: string;
   time: Date;
   ambition: string | null;
+  color: string | null;
 }
 
 interface Ambition {
   id: string;
   text: string;
   completed: boolean;
+  color: string;
 }
 
 interface TimeTrackerProps {
   ambitions: Ambition[];
-  onAmbitionUsed: (id: string) => void;
+  onAmbitionCompleted: (id: string, completed: boolean) => void;
 }
 
-const TimeTracker: React.FC<TimeTrackerProps> = ({ ambitions, onAmbitionUsed }) => {
+const TimeTracker: React.FC<TimeTrackerProps> = ({ ambitions, onAmbitionCompleted }) => {
   const [startTime, setStartTime] = useState<Date>(new Date(new Date().setHours(6, 0, 0, 0)));
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
 
@@ -29,6 +31,7 @@ const TimeTracker: React.FC<TimeTrackerProps> = ({ ambitions, onAmbitionUsed }) 
         id: `slot-${i}`,
         time: addMinutes(startTime, i * 30),
         ambition: null,
+        color: null,
       });
     }
     setTimeSlots(slots);
@@ -43,12 +46,11 @@ const TimeTracker: React.FC<TimeTrackerProps> = ({ ambitions, onAmbitionUsed }) 
   const handleDrop = (e: React.DragEvent<HTMLLIElement>, slotId: string) => {
     e.preventDefault();
     const ambitionId = e.dataTransfer.getData('text/plain');
-    const ambition = ambitions.find(a => a.id === ambitionId);
+    const ambition = ambitions.find(a => a.id === ambitionId && !a.completed);
     if (ambition) {
       setTimeSlots(slots => slots.map(slot => 
-        slot.id === slotId ? { ...slot, ambition: ambition.text } : slot
+        slot.id === slotId ? { ...slot, ambition: ambition.text, color: ambition.color } : slot
       ));
-      onAmbitionUsed(ambitionId);
     }
   };
 
@@ -85,6 +87,7 @@ const TimeTracker: React.FC<TimeTrackerProps> = ({ ambitions, onAmbitionUsed }) 
               className="px-4 py-4 flex items-center justify-between"
               onDrop={(e) => handleDrop(e, slot.id)}
               onDragOver={handleDragOver}
+              style={{ backgroundColor: slot.color || 'transparent' }}
             >
               <span className="text-sm font-medium text-gray-900">
                 {format(slot.time, 'HH:mm')}
