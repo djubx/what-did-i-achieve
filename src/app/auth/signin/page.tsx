@@ -14,6 +14,7 @@ export default function SignIn() {
   const [name, setName] = useState('')
   const [isSignUp, setIsSignUp] = useState(false)
   const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const { data: session, status } = useSession()
 
@@ -26,9 +27,10 @@ export default function SignIn() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    setIsLoading(true)
 
-    if (isSignUp) {
-      try {
+    try {
+      if (isSignUp) {
         const hashedPassword = await hash(password, 10)
         const newUser = {
           _type: 'user',
@@ -47,13 +49,8 @@ export default function SignIn() {
         } else {
           router.push('/dashboard')
         }
-      } catch (error) {
-        console.error('Error during sign up:', error)
-        setError('Error creating user: ' + (error instanceof Error ? error.message : String(error)))
-      }
-    } else {
-      // Sign in logic
-      try {
+      } else {
+        // Sign in logic
         const result = await signIn('credentials', {
           email,
           password,
@@ -63,17 +60,19 @@ export default function SignIn() {
         console.log('Sign-in result:', result)
 
         if (result?.error) {
-          setError('Error during sign in: ' + result.error)
+          setError('Incorrect Login Credentials: ' + result.error)
         } else if (result?.ok) {
           console.log('Sign-in successful, redirecting...')
           // The useEffect hook will handle the redirection
         } else {
           setError('Unknown error occurred during sign in')
         }
-      } catch (error) {
-        console.error('Error during sign in:', error)
-        setError('Error during sign in: ' + (error instanceof Error ? error.message : String(error)))
       }
+    } catch (error) {
+      console.error('Error during sign in:', error)
+      setError('Incorrect Login Credentials: ' + (error instanceof Error ? error.message : String(error)))
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -201,11 +200,20 @@ export default function SignIn() {
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              disabled={isLoading}
             >
               <span className="absolute left-0 inset-y-0 flex items-center pl-3">
-                <FaLock className="h-5 w-5 text-indigo-500 group-hover:text-indigo-400" aria-hidden="true" />
+                {isLoading ? (
+                  <motion.div
+                    className="h-5 w-5 border-t-2 border-white rounded-full"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  />
+                ) : (
+                  <FaLock className="h-5 w-5 text-indigo-500 group-hover:text-indigo-400" aria-hidden="true" />
+                )}
               </span>
-              {isSignUp ? 'Sign Up' : 'Sign In'}
+              {isLoading ? 'Processing...' : (isSignUp ? 'Sign Up' : 'Sign In')}
             </motion.button>
           </div>
         </form>
