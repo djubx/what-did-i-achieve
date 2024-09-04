@@ -136,7 +136,7 @@ export default function Dashboard() {
         transition={{ duration: 0.5, delay: 0.2 }}
       >
         <h2 className="text-2xl font-bold mb-4 text-indigo-600">Daily Ambitions</h2>
-        <form onSubmit={handleAddAmbition} className="mb-4">
+        <form onSubmit={handleAddAmbition} className="mb-6">
           <div className="relative">
             <input
               type="text"
@@ -145,14 +145,16 @@ export default function Dashboard() {
               placeholder="Add new ambition(s), separate multiple with commas"
               className="w-full p-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
-            <motion.button 
-              type="submit" 
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-indigo-500 hover:text-indigo-600"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-            >
-              <FaPlus />
-            </motion.button>
+            <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+              <motion.button 
+                type="submit" 
+                className="flex items-center justify-center w-8 h-8 text-indigo-500 hover:text-indigo-600 focus:outline-none"
+                whileHover={{ scale: 1.5 }}
+                whileTap={{ scale: 1.3 }}
+              >
+                <FaPlus />
+              </motion.button>
+            </div>
           </div>
         </form>
         <AmbitionsList 
