@@ -138,7 +138,9 @@ export default function Dashboard() {
         animate={{ y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
       >
-        <h2 className="text-2xl font-bold mb-4 text-indigo-600">Daily Progress</h2>
+        <h2 className="text-2xl font-bold mb-4 text-indigo-600">
+          {session?.user?.name ? `${session.user.name}'s Daily Progress` : 'Daily Progress'}
+        </h2>
         <div className="flex justify-center items-center space-x-4">
           <FaCheckCircle className="text-green-500 text-3xl" />
           <span className="text-4xl font-bold text-indigo-600">
@@ -156,7 +158,9 @@ export default function Dashboard() {
           animate={{ x: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <h2 className="text-2xl font-bold mb-4 text-indigo-600">Daily Ambitions</h2>
+          <h2 className="text-2xl font-bold mb-4 text-indigo-600">
+            {session?.user?.name ? `${session.user.name}'s Daily Ambitions` : 'Daily Ambitions'}
+          </h2>
           <form onSubmit={handleAddAmbition} className="mb-6">
             <div className="relative">
               <input

@@ -53,11 +53,19 @@ export const authOptions: NextAuthOptions = {
     signIn: '/auth/signin',
   },
   callbacks: {
-    async session({ session, token, user }) {
-      if (session?.user) {
-        session.user.id = token.sub || user.id
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.name = user.name;
       }
-      return session
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.id = token.id as string;
+        session.user.name = token.name as string;
+      }
+      return session;
     },
   },
   debug: process.env.NODE_ENV === 'development',
