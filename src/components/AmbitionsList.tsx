@@ -1,4 +1,6 @@
 import React from 'react';
+import { motion } from 'framer-motion';
+import { FaTrash } from 'react-icons/fa';
 
 interface Ambition {
   _key: string; // Add this line
@@ -25,6 +27,10 @@ const AmbitionsList: React.FC<AmbitionsListProps> = ({ ambitions, onAmbitionsCha
 
   const handleCompletedChange = (id: string, completed: boolean) => {
     onAmbitionCompleted(id, completed);
+  };
+
+  const handleRemoveAll = () => {
+    onAmbitionsChange([]);
   };
 
   const activeAmbitions = ambitions.filter(ambition => !ambition.completed);
@@ -60,7 +66,18 @@ const AmbitionsList: React.FC<AmbitionsListProps> = ({ ambitions, onAmbitionsCha
 
   return (
     <div>
-      <h3 className="text-lg font-semibold mb-2">Active Ambitions</h3>
+      <div className="flex justify-between items-center mb-2">
+        <h3 className="text-lg font-semibold">Active Ambitions</h3>
+        <motion.button
+          onClick={handleRemoveAll}
+          className="text-red-500 hover:text-red-700 flex items-center"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <FaTrash className="mr-1" />
+          Remove All
+        </motion.button>
+      </div>
       <ul className="divide-y divide-gray-200 mb-8">
         {activeAmbitions.map(renderAmbition)}
       </ul>
