@@ -89,14 +89,17 @@ export default function Dashboard() {
   const handleAddAmbition = (e: React.FormEvent) => {
     e.preventDefault();
     if (newAmbition.trim()) {
-      const newAmbitionItem: Ambition = {
-        _key: Date.now().toString(), // Add this line
-        id: Date.now().toString(),
-        text: newAmbition.trim(),
-        completed: false,
-        color: getUniqueColor()
-      };
-      const newAmbitions = [...ambitions, newAmbitionItem];
+      const ambitionList = newAmbition.split(',').map(item => item.trim()).filter(item => item !== '');
+      const newAmbitions = [
+        ...ambitions,
+        ...ambitionList.map(text => ({
+          _key: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+          text,
+          completed: false,
+          color: getUniqueColor()
+        }))
+      ];
       setAmbitions(newAmbitions);
       setNewAmbition('');
       updateSanityDashboard(newAmbitions);
@@ -139,7 +142,7 @@ export default function Dashboard() {
               type="text"
               value={newAmbition}
               onChange={(e) => setNewAmbition(e.target.value)}
-              placeholder="Add a new ambition"
+              placeholder="Add new ambition(s), separate multiple with commas"
               className="w-full p-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
             <motion.button 
