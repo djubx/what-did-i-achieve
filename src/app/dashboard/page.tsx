@@ -6,7 +6,7 @@ import { sanityClient } from '@/lib/sanity'
 import TimeTracker, { TimeSlot } from '@/components/TimeTracker'
 import AmbitionsList from '@/components/AmbitionsList'
 import { motion } from 'framer-motion'
-import { FaPlus } from 'react-icons/fa'
+import { FaPlus, FaCheckCircle, FaHourglassHalf } from 'react-icons/fa'
 
 interface Ambition {
   _key: string;
@@ -122,61 +122,83 @@ export default function Dashboard() {
     }
   };
 
+  const completedAmbitions = ambitions.filter(a => a.completed).length
+  const totalAmbitions = ambitions.length
+
   return (
     <motion.div 
-      className="flex flex-col md:flex-row gap-8 p-4"
+      className="flex flex-col gap-8 p-4"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <motion.div 
-        className="w-full md:w-1/2 bg-white bg-opacity-90 p-6 rounded-xl shadow-lg"
-        initial={{ x: -20 }}
-        animate={{ x: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
+      <motion.div
+        className="w-full bg-white bg-opacity-90 p-6 rounded-xl shadow-lg text-center"
+        initial={{ y: -20 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
       >
-        <h2 className="text-2xl font-bold mb-4 text-indigo-600">Daily Ambitions</h2>
-        <form onSubmit={handleAddAmbition} className="mb-6">
-          <div className="relative">
-            <input
-              type="text"
-              value={newAmbition}
-              onChange={(e) => setNewAmbition(e.target.value)}
-              placeholder="Add new ambition(s), separate multiple with commas"
-              className="w-full p-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-            <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-              <motion.button 
-                type="submit" 
-                className="flex items-center justify-center w-8 h-8 text-indigo-500 hover:text-indigo-600 focus:outline-none"
-                whileHover={{ scale: 1.5 }}
-                whileTap={{ scale: 1.3 }}
-              >
-                <FaPlus />
-              </motion.button>
+        <h2 className="text-2xl font-bold mb-4 text-indigo-600">Daily Progress</h2>
+        <div className="flex justify-center items-center space-x-4">
+          <FaCheckCircle className="text-green-500 text-3xl" />
+          <span className="text-4xl font-bold text-indigo-600">
+            {completedAmbitions} / {totalAmbitions}
+          </span>
+          <FaHourglassHalf className="text-yellow-500 text-3xl" />
+        </div>
+        <p className="mt-2 text-gray-600">ambitions achieved</p>
+      </motion.div>
+
+      <div className="flex flex-col md:flex-row gap-8">
+        <motion.div 
+          className="w-full md:w-1/2 bg-white bg-opacity-90 p-6 rounded-xl shadow-lg"
+          initial={{ x: -20 }}
+          animate={{ x: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <h2 className="text-2xl font-bold mb-4 text-indigo-600">Daily Ambitions</h2>
+          <form onSubmit={handleAddAmbition} className="mb-6">
+            <div className="relative">
+              <input
+                type="text"
+                value={newAmbition}
+                onChange={(e) => setNewAmbition(e.target.value)}
+                placeholder="Add new ambition(s), separate multiple with commas"
+                className="w-full p-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+              <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+                <motion.button 
+                  type="submit" 
+                  className="flex items-center justify-center w-8 h-8 text-indigo-500 hover:text-indigo-600 focus:outline-none"
+                  whileHover={{ scale: 1.5 }}
+                  whileTap={{ scale: 1.3 }}
+                >
+                  <FaPlus />
+                </motion.button>
+              </div>
             </div>
-          </div>
-        </form>
-        <AmbitionsList 
-          ambitions={ambitions} 
-          onAmbitionsChange={handleAmbitionsChange}
-          onAmbitionCompleted={handleAmbitionCompleted}
-        />
-      </motion.div>
-      <motion.div 
-        className="w-full md:w-1/2 bg-white bg-opacity-90 p-6 rounded-xl shadow-lg"
-        initial={{ x: 20 }}
-        animate={{ x: 0 }}
-        transition={{ duration: 0.5, delay: 0.4 }}
-      >
-        <TimeTracker 
-          dashboardData={dashboardData}
-          updateDashboardData={updateDashboardData}
-          ambitions={ambitions}
-          onAmbitionCompleted={handleAmbitionCompleted}
-          updateSanityDashboard={updateSanityDashboard}
-        />
-      </motion.div>
+          </form>
+          <AmbitionsList 
+            ambitions={ambitions} 
+            onAmbitionsChange={handleAmbitionsChange}
+            onAmbitionCompleted={handleAmbitionCompleted}
+          />
+        </motion.div>
+        <motion.div 
+          className="w-full md:w-1/2 bg-white bg-opacity-90 p-6 rounded-xl shadow-lg"
+          initial={{ x: 20 }}
+          animate={{ x: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+        >
+          <TimeTracker 
+            dashboardData={dashboardData}
+            updateDashboardData={updateDashboardData}
+            ambitions={ambitions}
+            onAmbitionCompleted={handleAmbitionCompleted}
+            updateSanityDashboard={updateSanityDashboard}
+          />
+        </motion.div>
+      </div>
     </motion.div>
   )
 }
