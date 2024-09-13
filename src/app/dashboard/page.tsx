@@ -6,7 +6,7 @@ import { sanityClient } from '@/lib/sanity'
 import TimeTracker, { TimeSlot } from '@/components/TimeTracker'
 import AmbitionsList from '@/components/AmbitionsList'
 import { motion } from 'framer-motion'
-import { FaPlus, FaCheckCircle, FaHourglassHalf } from 'react-icons/fa'
+import { FaPlus, FaCheckCircle, FaHourglassHalf, FaShare } from 'react-icons/fa'
 
 interface Ambition {
   _key: string;
@@ -27,6 +27,7 @@ export default function Dashboard() {
   const [ambitions, setAmbitions] = useState<Ambition[]>([]);
   const [newAmbition, setNewAmbition] = useState('');
   const [usedColors, setUsedColors] = useState<string[]>([]);
+  const [shareableLink, setShareableLink] = useState<string | null>(null);
 
   useEffect(() => {
     if (session?.user) {
@@ -125,6 +126,28 @@ export default function Dashboard() {
   const completedAmbitions = ambitions.filter(a => a.completed).length
   const totalAmbitions = ambitions.length
 
+  const generateShareableLink = useCallback(async () => {
+    if (session?.user?.id) {
+      const response = await fetch('/api/dashboard/share', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId: session.user.id }),
+      })
+
+      if (response.ok) {
+        const { shareableId } = await response.json()
+        const link = `${window.location.origin}/shared-dashboard/${shareableId}`
+        setShareableLink(link)
+        navigator.clipboard.writeText(link)
+        alert('Shareable link copied to clipboard!')
+      } else {
+        console.error('Failed to generate shareable link')
+      }
+    }
+  }, [session])
+
   return (
     <motion.div 
       className="flex flex-col gap-8 p-4"
@@ -149,6 +172,15 @@ export default function Dashboard() {
           <FaHourglassHalf className="text-yellow-500 text-3xl" />
         </div>
         <p className="mt-2 text-gray-600">ambitions achieved</p>
+        <motion.button
+          onClick={generateShareableLink}
+          className="mt-4 flex items-center justify-center mx-auto px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <FaShare className="mr-2" />
+          Share Dashboard
+        </motion.button>
       </motion.div>
 
       <div className="flex flex-col md:flex-row gap-8">
