@@ -5,6 +5,7 @@ import { sanityClient } from '@/lib/sanity'
 import AmbitionsList from '@/components/AmbitionsList'
 import TimeTracker from '@/components/TimeTracker'
 import { motion } from 'framer-motion'
+import { FaCheckCircle, FaHourglassHalf } from 'react-icons/fa'
 
 export default function SharedDashboard({ params }: { params: { shareableId: string } }) {
   const [dashboardData, setDashboardData] = useState<any>(null)
@@ -52,9 +53,11 @@ export default function SharedDashboard({ params }: { params: { shareableId: str
       >
         <h2 className="text-2xl font-bold mb-4 text-indigo-600">Shared Dashboard</h2>
         <div className="flex justify-center items-center space-x-4">
+          <FaCheckCircle className="text-green-500 text-3xl" />
           <span className="text-4xl font-bold text-indigo-600">
             {completedAmbitions} / {totalAmbitions}
           </span>
+          <FaHourglassHalf className="text-yellow-500 text-3xl" />
         </div>
         <p className="mt-2 text-gray-600">ambitions achieved</p>
       </motion.div>

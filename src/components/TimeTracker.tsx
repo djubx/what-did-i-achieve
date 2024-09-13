@@ -22,14 +22,16 @@ interface TimeTrackerProps {
   ambitions: Ambition[];
   onAmbitionCompleted: (id: string, completed: boolean) => void;
   updateSanityDashboard: (newAmbitions: Ambition[], newTimeSlots?: TimeSlot[], newStartTime?: Date) => void;
+  readOnly?: boolean;
 }
 
 const TimeTracker: React.FC<TimeTrackerProps> = ({ 
   dashboardData, 
   updateDashboardData, 
   ambitions, 
-  onAmbitionCompleted,
-  updateSanityDashboard
+  onAmbitionCompleted, 
+  updateSanityDashboard,
+  readOnly = false
 }) => {
   const [startTime, setStartTime] = useState<Date>(new Date(new Date().setHours(6, 0, 0, 0)));
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
@@ -55,6 +57,8 @@ const TimeTracker: React.FC<TimeTrackerProps> = ({
 
   const handleDrop = (e: React.DragEvent<HTMLLIElement>, slotTime: Date) => {
     e.preventDefault();
+    if (readOnly) return;
+
     const ambitionId = e.dataTransfer.getData('text/plain');
     const ambition = ambitions.find(a => a.id === ambitionId && !a.completed);
     if (ambition) {
@@ -104,7 +108,7 @@ const TimeTracker: React.FC<TimeTrackerProps> = ({
       slots.push(
         <li 
           key={`slot-${i}`}
-          className="px-4 py-4 flex items-center justify-between"
+          className={`px-4 py-4 flex items-center justify-between ${!readOnly ? 'cursor-pointer' : ''}`}
           onDrop={(e) => handleDrop(e, slotTime)}
           onDragOver={handleDragOver}
           style={{ backgroundColor: ambitions.find(a => a.text === existingSlot?.ambition)?.color || 'transparent' }}
@@ -113,7 +117,7 @@ const TimeTracker: React.FC<TimeTrackerProps> = ({
             {format(slotTime, 'HH:mm')}
           </span>
           <span className="text-sm text-gray-500">
-            {existingSlot?.ambition || 'Drag an ambition here'}
+            {existingSlot?.ambition || (!readOnly ? 'Drag an ambition here' : '')}
           </span>
         </li>
       );
@@ -121,32 +125,58 @@ const TimeTracker: React.FC<TimeTrackerProps> = ({
     return slots;
   };
 
+  const renderDraggableAmbitions = () => {
+    return (
+      <div className="mt-4">
+        <h3 className="text-lg font-semibold mb-2">Drag Ambitions to Time Slots</h3>
+        <div className="flex flex-wrap gap-2">
+          {ambitions.filter(a => !a.completed).map(ambition => (
+            <div
+              key={ambition.id}
+              draggable={!readOnly}
+              onDragStart={(e) => e.dataTransfer.setData('text/plain', ambition.id)}
+              className="p-2 rounded-lg cursor-move"
+              style={{ backgroundColor: ambition.color }}
+            >
+              {ambition.text}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-      <div className="px-4 py-5 sm:px-6">
-        <h3 className="text-lg leading-6 font-medium text-gray-900">Time Tracker</h3>
-        <p className="mt-1 max-w-2xl text-sm text-gray-500">Track your daily activities in 30-minute slots</p>
+    <div>
+      <h2 className="text-2xl font-bold mb-4 text-indigo-600">Time Tracker</h2>
+      <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div className="px-4 py-5 sm:px-6">
+          <h3 className="text-lg leading-6 font-medium text-gray-900">Time Tracker</h3>
+          <p className="mt-1 max-w-2xl text-sm text-gray-500">Track your daily activities in 30-minute slots</p>
+        </div>
+        <div className="border-t border-gray-200 px-4 py-5 sm:p-0">
+          <dl className="sm:divide-y sm:divide-gray-200">
+            <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt className="text-sm font-medium text-gray-500">Start Time</dt>
+              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                <input
+                  type="time"
+                  value={format(startTime, 'HH:mm')}
+                  onChange={handleStartTimeChange}
+                  className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                  disabled={readOnly}
+                />
+              </dd>
+            </div>
+          </dl>
+        </div>
+        <div className="border-t border-gray-200">
+          <ul className="divide-y divide-gray-200">
+            {renderTimeSlots()}
+          </ul>
+        </div>
       </div>
-      <div className="border-t border-gray-200 px-4 py-5 sm:p-0">
-        <dl className="sm:divide-y sm:divide-gray-200">
-          <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt className="text-sm font-medium text-gray-500">Start Time</dt>
-            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-              <input
-                type="time"
-                value={format(startTime, 'HH:mm')}
-                onChange={handleStartTimeChange}
-                className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
-              />
-            </dd>
-          </div>
-        </dl>
-      </div>
-      <div className="border-t border-gray-200">
-        <ul className="divide-y divide-gray-200">
-          {renderTimeSlots()}
-        </ul>
-      </div>
+      {!readOnly && renderDraggableAmbitions()}
     </div>
   );
 };

@@ -12,15 +12,12 @@ interface Ambition {
 
 interface AmbitionsListProps {
   ambitions: Ambition[];
-  onAmbitionsChange: (newAmbitions: Ambition[]) => void;
+  onAmbitionsChange: (ambitions: Ambition[]) => void;
   onAmbitionCompleted: (id: string, completed: boolean) => void;
+  readOnly?: boolean;
 }
 
-const AmbitionsList: React.FC<AmbitionsListProps> = ({ ambitions, onAmbitionsChange, onAmbitionCompleted }) => {
-  const handleDragStart = (e: React.DragEvent<HTMLLIElement>, id: string) => {
-    e.dataTransfer.setData('text/plain', id);
-  };
-
+const AmbitionsList: React.FC<AmbitionsListProps> = ({ ambitions, onAmbitionsChange, onAmbitionCompleted, readOnly = false }) => {
   const handleRemove = (id: string) => {
     onAmbitionsChange(ambitions.filter(ambition => ambition.id !== id));
   };
@@ -29,67 +26,47 @@ const AmbitionsList: React.FC<AmbitionsListProps> = ({ ambitions, onAmbitionsCha
     onAmbitionCompleted(id, completed);
   };
 
-  const handleRemoveAll = () => {
-    onAmbitionsChange([]);
-  };
+  const renderAmbition = (ambition: Ambition) => (
+    <div
+      key={ambition.id}
+      className="flex items-center p-2 rounded-lg mb-2"
+      style={{ backgroundColor: ambition.color }}
+    >
+      {!readOnly && (
+        <input
+          type="checkbox"
+          checked={ambition.completed}
+          onChange={() => handleCompletedChange(ambition.id, !ambition.completed)}
+          className="mr-2"
+        />
+      )}
+      <span className={`flex-grow ${ambition.completed ? 'line-through' : ''}`}>
+        {ambition.text}
+      </span>
+      {!readOnly && !ambition.completed && (
+        <button
+          onClick={() => handleRemove(ambition.id)}
+          className="text-red-500 hover:text-red-700"
+        >
+          <FaTrash />
+        </button>
+      )}
+    </div>
+  );
 
   const activeAmbitions = ambitions.filter(ambition => !ambition.completed);
   const completedAmbitions = ambitions.filter(ambition => ambition.completed);
 
-  const renderAmbition = (ambition: Ambition) => (
-    <li
-      key={ambition.id}
-      draggable={!ambition.completed}
-      onDragStart={(e) => handleDragStart(e, ambition.id)}
-      className="px-4 py-4 flex items-center justify-between cursor-move"
-      style={{ backgroundColor: ambition.color }}
-    >
-      <div className="flex items-center">
-        <input
-          type="checkbox"
-          checked={ambition.completed}
-          onChange={(e) => handleCompletedChange(ambition.id, e.target.checked)}
-          className="mr-2"
-        />
-        <span className={`text-sm text-gray-900 ${ambition.completed ? 'line-through' : ''}`}>
-          {ambition.text}
-        </span>
-      </div>
-      <button
-        onClick={() => handleRemove(ambition.id)}
-        className="ml-2 text-red-500 hover:text-red-700"
-      >
-        Remove
-      </button>
-    </li>
-  );
-
   return (
     <div>
-      <div className="flex justify-between items-center mb-2">
-        <h3 className="text-lg font-semibold">Active Ambitions</h3>
-        <motion.button
-          onClick={handleRemoveAll}
-          className="text-red-500 hover:text-red-700 flex items-center"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <FaTrash className="mr-1" />
-          Remove All
-        </motion.button>
-      </div>
-      <ul className="divide-y divide-gray-200 mb-8">
+      <h3 className="text-lg font-semibold mb-2">Active Ambitions</h3>
+      <div className="space-y-2 mb-4">
         {activeAmbitions.map(renderAmbition)}
-      </ul>
-      
-      {completedAmbitions.length > 0 && (
-        <>
-          <h3 className="text-lg font-semibold mb-2">Completed Ambitions</h3>
-          <ul className="divide-y divide-gray-200">
-            {completedAmbitions.map(renderAmbition)}
-          </ul>
-        </>
-      )}
+      </div>
+      <h3 className="text-lg font-semibold mb-2">Completed Ambitions</h3>
+      <div className="space-y-2">
+        {completedAmbitions.map(renderAmbition)}
+      </div>
     </div>
   );
 };
